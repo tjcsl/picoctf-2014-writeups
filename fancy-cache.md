@@ -233,6 +233,6 @@ print cache_get(f,'/bin/sh',thing=True)
 Run that, and there we go, it's a shell!
 
 ```bash
-    cat /home/fancy_cache/flag.txt
-    that_wasnt_so_free_after_all
+cat /home/fancy_cache/flag.txt
+that_wasnt_so_free_after_all
 ```
