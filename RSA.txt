@@ -1,0 +1,45 @@
+after unpacking the tarball, HEY LOOK.... N is factored. and i have a magical keyyyyyyyyyy.... whatever. here's some numbers.
+(notes for laypeople: a tarball is like a zipped folder... but on a thing called linux. its like windows vs. mac, but linux is for computer nerdy people who think they are too cool to use things that are simple to use. so basically, a tarball (the file that they gave us in the problem) is like one of those great zipped folders on windows, but they have a stupid pretentious linux-tastic name. inside were 2 .txt files with the following inside.)
+N = 0xb197d3afe713816582ee988b276f635800f728f118f5125de1c7c1e57f2738351de8ac643c118a5480f867b6d8756021911818e470952bd0a5262ed86b4fc4c2b7962cd197a8bd8d8ae3f821ad712a42285db67c85983581c4c39f80dbb21bf700dbd2ae9709f7e307769b5c0e624b661441c1ddb62ef1fe7684bbe61d8a19e7
+(n is known as the modulus. you divide things by this giant number to get the remainder. in RSA encryption, you pick 2 giant prime numbers-p and q- and multiply them together to get n. then you find the totient of n, which is (p-1)*(q-1). next, you pick a prime number that is NOT a factor of the totient of n, and call that 2. next you find a number d for which (e*d)%totient n = 1. your friend will take their message in number form, put it to the power of your e, which you publish, and then divide it by n and send you the remainder, which i call "c" below. You will put c to the power of your d (which you keep secret) then find the remainder again when divided by n. put it from number form back to word form, and you will have the original message. This mathematically ensures- with mathematical magic that you should read about if you care about it- that nobody but you will be able to take what your friend sent you and turn it into the original number that can be turned easily into text.)
+e = 65537
+(e is the public key- the number that you publish that your friend uses to encode what he wants to send to you)
+p = 0xc315d99cf91a018dafba850237935b2d981e82b02d994f94db0a1ae40d1fc7ab9799286ac68d620f1102ef515b348807060e6caec5320e3dceb25a0b98356399
+(p is the first ginormous prime)
+q = 0xe90bbb3d4f51311f0b7669abd04e4cc48687ad0e168e7183a9de3ff9fd2d2a3a50303a5109457bd45f0abe1c5750edfaff1ad87c13eed45e1b4bd2366b49d97f
+(q is the other ginormous prime)
+d = 0x496747c7dceae300e22d5c3fa7fd1242bda36af8bc280f7f5e630271a92cbcbeb7ae04132a00d5fc379274cbce8c353faa891b40d087d7a4559e829e513c97467345adca3aa66550a68889cf930ecdfde706445b3f110c0cb4a81ca66f8630ed003feea59a51dc1d18a7f6301f2817cb53b1fb58b2a5ad163e9f1f9fe463b901
+(d is the secret number that you use for decryption: your private key)
+c =
+58ae101736022f486216e290d39e839e7d02a124f725865ed1b5eea7144a4c40828bd4d14dcea967561477a516ce338f293ca86efc72a272c332c5468ef43ed5d8062152aae9484a50051d71943cf4c3249d8c4b2f6c39680cc75e58125359edd2544e89f54d2e5cbed06bb3ed61e5ca7643ebb7fa04638aa0a0f23955e5b5d9
+(c is what your friend sent you- what the heck is this, we need to do math to read whatever juicy gossip he's sent.)
+algebra time!!
+(your friend already did the part where he puts m to the power of e and finds the remainder divided by n, and that is c, the encrypted message. that process, by the way, can be algebraically represented by c = (m^e)%n... now we need to decrypt it. we need to do the part with putting c to the d, and finding the remainder divided by n. this should give us the message when we solve it! but it's never that easy, is it.....)
+m=c^d %n
+(try plugging numbers into that in python. i dare you. now go eat lunch, take a nice long nap.... its still not finished. that's cuz putting a hella big number to the power of a hella bigger number means that the computer has to do many, many, many things. and the computer is going to take a long time.... so we need to somehow get the exponent smaller so that it goes faster... but that would make a different value, right? WRONGGGGG!!!! properties of math when using these funky remainder percent things says that we can make the exponent smaller in specific ways. if you're curious, google modular arithmetic properties, but my code below, where lol==c, kitten==d, and shrek==n, will do the job quite nicely. this process is called decomposing an exponent in number theory <3 :P )
+i made a cute little function to decompose the exponent (look how cute) :D
+here is my code :P
+(it also turns out that python has a built in method for doing this. ==pow(lol,kitten,shrek))
+(fml. i wasted quite a bit of time working this out....)
+>>> def modularmazdazoom(lol, kitten, shrek):
+...     yourmom = 1
+...     while kitten > 0:
+...         if (kitten % 2 == 1):
+...             yourmom = yourmom * lol % shrek
+...         kitten = kitten/2
+...         lol = lol * lol % shrek
+...     return yourmom
+(i returned your mom last night...)
+ 
+and then i went wheeeeee
+(i ran this line of code in python)
+hex(modularmazdazoom(c,d,n))
+(modularmazdazoom returns a base-10 number, like how you count on your fingers. now add 6 extra digits represented by letters, and instead of the scientific notation being 10^whatever, now it's 16^whatever. sounds fun, eh? not really. but the next step needs hex, and computers really prefer hex because they think in binary aka base 2-- base-16, 16 being a power of 2, is like shorthand for binary, because each 8 digits get directly turned into 2 digits.)
+then i stuck it in a cool thing that i found on the internetz (no it wasnt a cat picture)
+(this cool thing was a hex to ASCII translator-- ascii is a encoding thing for characters, each letter turns into like a 2-digit hexadecimal number, so it turned numbers into letters.)
+and i got this thing:
+ Congratulations on decrypting an RSA message! Your flag is modular_arithmetics_not_so_bad_after_all
+and i thought
+hey maybe thats my flag
+and holy crud
+it was.
