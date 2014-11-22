@@ -72,7 +72,8 @@ I modified `safe_gethostname` to always set `name` to 32 "k"s, without a null te
 
 ```c
 void safe_gethostname(char *name, size_t len) {
-    name = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
+    char *fakename = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
+    memcpy(name, fakename, 32);
 }
 ```
 
