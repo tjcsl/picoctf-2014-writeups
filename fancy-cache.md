@@ -178,6 +178,7 @@ Sure enough, running this gives us `kSecretString`: "Congratulations! Looks like
 
 ##### Getting a shell
 The page mentioned above specifies 3 steps to getting a shell:
+
 1. Finding the address of `system` (4 bytes)
 2. Replacing the GOT entry of `memcmp` with the address of `system`
 3. Trigger a call to `memcmp`
