@@ -1,6 +1,6 @@
 I started by decompiling the Java file, which gave me the port to connect to (4919). I then took a look at the signature verification algorithm and wrote a Python equivalent:
 
-```
+```py
 def verify(one, two):
     """
     x^3 == 1ffffffffff{hash}anything
@@ -30,7 +30,7 @@ def verify(one, two):
 
 Based on this, I wrote a function to find a valid signature (i.e. one that matched the pattern "1ffffffffff{hash_of_command}anything"):
 
-```
+```py
 def guess(one):
     getcontext().prec = 1000
 
@@ -47,7 +47,7 @@ def guess(one):
 
 I just ran the guess() function on the strings "ls" and "cat" which allowed me to generate valid signatures for flags:
 
-```
+```py
 # ls
 # 7fffffffffeabe552908539123fadd400fbe7e0f52dad18bfb9f769757dae2a008d47be25f7e3236b8cb6cdc0d56a69c2b30da0f1c65a8039a7a1b3b4182dacfb946a4cd283900f1701889919e1f408d3fc10c4a318d28c9b57aaed2ad3d9173633cc6ea24ac5c56d0785d7939e17b7060a4c79211248010dc6ee5c667ad335
 
