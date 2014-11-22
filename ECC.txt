@@ -1,0 +1,38 @@
+first off, don't you dare skip this step, i want all you goofuses to read my writeup on RSA- the 80-point one- to get what im talking about a little with modular math (those percent signs). then please read this http://arstechnica.com/security/2013/10/a-relatively-easy-to-understand-primer-on-elliptic-curve-cryptography/ because i don't want to explain EXACTLY how all this works. that would take PAGES..... but ill give you the tl;dr later on, which will be hopefully very easy to understand with the help of a nice gentleman named nick sullivan.
+i am going to assume a basic familiarity with modular math. i will not be calling it the remainder thingy in this writeup, because i missed my human decency quite a bit while writing up RSA and telling the reader about how it was the remainder from a division problem every time their delicate eyes saw a percent sign. i hope you can survive without the hand-holding.... if not, http://www.math.rutgers.edu/~erowland/modulararithmetic.html
+so you open the file https://picoctf.com/problem-static/crypto/ecc/ecc_handout.txt, and the first thing you see is a nice big algebraic equation!! ooh! i love those!!.... not so fast, sonny. that mod n at the end is going to leave you wasted and out of control. let's plug in numbers first, shall we? we know that y^2 = (x^3 + ax + b) is an equation, and the %n at the end basically cuts out a square thats n*n in side length, then wraps the graph around a donut, then graphs on the donut- if it goes off the top of the graph it goes around to the bottom and continues. thats what the weird Z/nZ thing meant in the hint- we will implement this later on :)
+the x and y here, shockingly enough, are components of a point. we know that both c and m are points on the curve, and we have c, so we can just like... plug that in. and a is zero.... i love when terms just disappear, it makes my life so easy. solve for b....
+(12418605208975891779391^2)%928669833265826932708591 = (236857987845294655469221^3 + b)%928669833265826932708591
+simplify w/ wolfram and algebra, a girl's best friend amirite...
+b comes out to 1197562623360958397955011.
+wahoo! part one done!
+so it says use sage to do the calculations... but it also says you can just multiply, right? not really. this is a special type of multiplication called point doubling, or point multiplication, and sage will automatically do it for you. Here's an explanation of what sage is doing:
+http://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication
+basically, this process bounces the original point around the curve (the one defined above that we wrapped around a donut) "e" number of times to encrypt it, and "d" number of times to decrypt it. it's the same principle as RSA, where e is the public key that your friend uses to encrypt it, and d is the private key that you use to decrypt the message. rather than putting the message to the exponent e or d then modding by n, you point multiply it e or d number of times around a curve defined by an equation of the form above, defined by a, b, and n. sage will do this for you, and i'll explain my code to you line by line.
+first, define the "donut" that i talked about earlier that we are going to wrap the coordinate plane around so that we can bounce the points around and keeping everything mod n at every stage of the process.
+F = Zmod(928669833265826932708591)
+This sets F to the integer ring made by the constructor Zmod(n)
+next define the curve itself, we will call it E. the constructor for the curve is taking as arguments our ring, then in the brackets the values for a and b that we found in step 1.
+E= EllipticCurve(F, [ 0, 1197562623360958397955011])
+And print the curve description....
+E
+now, we define the point C (the encrypted one) as a point on the curve E. the constructor takes the x and y coordinates as arguments.
+C = E.point((236857987845294655469221, 12418605208975891779391))
+let's print C to check
+C
+because we defined C to be a point on an elliptic curve, when we multiply a number by C sage will automatically perform the point multiplication operation on C and give you a new point. we will set this point to M.
+M = 87441340171043308346177 * C
+print m
+M
+now run the code- here's sample output.
+Elliptic Curve defined by y^2 = x^3 + 268892790095131465246420 over Ring of integers modulo 928669833265826932708591
+(236857987845294655469221 : 12418605208975891779391 : 1)
+(6976767380847367326785 : 828669833265826932708578 : 1)
+Very nice! this is exactly what we want. now, the original handout from the problem gave us a method to turn these numbers into strings- i defined that function in python, then ran the x and y coordinates of point M through it:
+STR(M.x) = E L L I P T I C   C U
+STR(M.y) = R V E S   A R E   F U N
+concatenate these, and you get "elliptic curves are fun".
+sure, theyre fun, for a very limited and masochistic definition of fun.
+meh, just kidding, this was a super fun problem.... just dont try to write the script to point multiply yourself, because that is just another way to spell pain, pain, pain.
+until next time! (that is, until you get curious about RSA mistakes or RSA)
+<3, laudiacay
