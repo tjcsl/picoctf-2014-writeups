@@ -29,7 +29,6 @@ here is my code :P
 ...         kitten = kitten/2
 ...         lol = lol * lol % shrek
 ...     return yourmom
-(i returned your mom last night...)
  
 and then i went wheeeeee
 (i ran this line of code in python)
