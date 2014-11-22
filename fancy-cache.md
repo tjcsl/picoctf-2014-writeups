@@ -106,6 +106,7 @@ Now lets look at where `entry` is actually defined in `do_cache_set`:
     }
 
 Bingo! Because of how the system is set up, if a cache entry's lifetime has expired, it will reuse that entry when creating a new one. This means our exploitation process for reading memory is going to look something like this:
+
 1. Create a cache entry with a lifetime of 1
 2. Request that cache entry, thus freeing the entry because the entry has expired
 3. Somehow overwrite the `free`'d `value` struct as explained above with our desired fake struct
