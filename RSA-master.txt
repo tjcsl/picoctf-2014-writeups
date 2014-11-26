@@ -5,7 +5,7 @@ OOH. This line looks super interesting.... its the only one with math, right? an
 encrypted = hex(pow(user_id * int(message.encode('hex'), 16) + (user_id**2), e, N))
 SO! lets start simple, thats an ugly expression.
 user_id * int(message.encode('hex'), 16) + (user_id**2)
-so, it puts the message - we'll call it n, as a hex number.
+so, it puts the message - we'll call it m, as a hex number.
 (nobody cares that it's hex, but it's been turned into a number, probably with the same sort of numerical encoding as in ECC... worry about it when we have the numbers we want)
 then, it puts it into a polynomial sort of thing with the user id (u) like so:
 um + u^2
