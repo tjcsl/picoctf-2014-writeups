@@ -1,0 +1,99 @@
+Alright, laudiacay checking in for more crypto masochism funtime! if you aren't familiar with RSA math, go ahead on over to the regular 80 point RSA problem and scan over that, maybe look at the wikipedia page for RSA as well.
+This one is actually deceptively simple: before you even OPEN the pcap file, the hint tells you that some of the messages are related in a certain way. Let's crack open the server.py and take a look at what they're doing there to encrypt the messages. (open the code in another window now)
+ so... you give them a public key (that's e and n, remember) to encrypt RSA with, and a user id. Looks like they put N into hex (we don't really care about what kind of number it is until we turn it into text because all operations are going to be the same decimal or hex until that point, I will generally be writing numbers in decimal) ... typecast everything as an int.... blah blah...
+OOH. This line looks super interesting.... its the only one with math, right? and the entire program looks built to give this value. math is good in RSA. Let's look at this.
+encrypted = hex(pow(user_id * int(message.encode('hex'), 16) + (user_id**2), e, N))
+SO! lets start simple, thats an ugly expression.
+user_id * int(message.encode('hex'), 16) + (user_id**2)
+so, it puts the message - we'll call it n, as a hex number.
+(nobody cares that it's hex, but it's been turned into a number, probably with the same sort of numerical encoding as in ECC... worry about it when we have the numbers we want)
+then, it puts it into a polynomial sort of thing with the user id (u) like so:
+um + u^2
+so e and N are pretty obvious what those are, they're the public key
+if you remember from my RSA writeup, we talked about how pow(a,b,c) meant that it would be a^b%c. this looks to be normal RSA encryption, same equation... except the message is modified by a polynomial.
+(um+u^2)^e%n = c
+by extension,
+c^d%n = (um+u^2)
+we probably don't have d, this is a master problem.... neither do we have any numbers at all, haha. we're done here with the python program, let's take a look at the PCAP file.
+oh man... windows doesn't seem to play very nice with PCAP files. however, with some quick googling, we see that wireshark is a tool that records packet transmissions and saves them as PCAPs.... and can also open PCAPs to see what they say. let's open it and see what happens.
+after opening the file and looking at what wireshark gives, it looks like, well, a lot of numbers and codey things that make no sense. after clicking around for a few minutes, i find that i can get to something that looks comprehensible by rightclicking on #1 and hitting follow TCP stream. this goes to a screen where transmissions 1-16 are listed, and a popup appears with:
+Welcome to the Daedalus Corp Message Service
+Please send me a public key and an ID. We'll encrypt the message and send it to you.
+b8c58f3a888c8918d07e04298edeb393f962df849058704e3cc4c0ec939d09235877b60bff9914ed16f5adeab0cdf880aa84e125f436d57171015f2a168b5b8d22c3d1f40ff6455e33a8ad837431f17f3783cb0abb275aab553b9f07cfb9cd3f33d649f79ec5814be8c72355af682de27e68436c6749d7ce616c0a22c691e8ff 3 1750x1df4e438b9b28a3be1b19c33044df52ba4cbc90f7af80e28063fabb7f1d3a8d70f759963f99f9c0bac1b9e31babab1fd68e30eff9c9d5b29c31b7d84a4ddc97de8fbeb9595b9cea554cbe6a55152d151e694e4fa19388ebaf854000b48cc079072950598e27cdc01a0a49968baa5cdef3c00ed73e918dfc61ba50478c229f7acL
+I do this with all the transmissions and get the following data.
+1. b8c58f3a888c8918d07e04298edeb393f962df849058704e3cc4c0ec939d09235877b60bff9914ed16f5adeab0cdf880aa84e125f436d57171015f2a168b5b8d22c3d1f40ff6455e33a8ad837431f17f3783cb0abb275aab553b9f07cfb9cd3f33d649f79ec5814be8c72355af682de27e68436c6749d7ce616c0a22c691e8ff
+3
+175
+0x1df4e438b9b28a3be1b19c33044df52ba4cbc90f7af80e28063fabb7f1d3a8d70f759963f99f9c0bac1b9e31babab1fd68e30eff9c9d5b29c31b7d84a4ddc97de8fbeb9595b9cea554cbe6a55152d151e694e4fa19388ebaf854000b48cc079072950598e27cdc01a0a49968baa5cdef3c00ed73e918dfc61ba50478c229f7acL
+2. fd2adfc8f9e88d3f31941e82bef75f6f9afcbba4ba2fc19e71aab2bf5eb3dbbfb1ff3e84b6a4900f472cc9450205d2062fa6e532530938ffb9e144e4f9307d8a2ebd01ae578fd10699475491218709cfa0aa1bfbd7f2ebc5151ce9c7e7256f14915a52d235625342c7d052de0521341e00db5748bcad592b82423c556f1c1051
+3
+37
+0x81579ec88d73deaf602426946939f0339fed44be1b318305e1ab8d4d77a8e1dd7c67ea9cbac059ef06dd7bb91648314924d65165ec66065f4af96f7b4ce53f8edac10775e0d82660aa98ca62125699f7809dac8cf1fc8d44a09cc44f0d04ee318fb0015e5d7dcd7a23f6a5d3b1dbbdf8aab207245edf079d71c6ef5b3fc04416L
+3. b3faca5b217fb38026ea06ad314f17656f8b2f155e1709afac5fd91d5b55ae6ac09eafb8c8065065a4bee53b21143fd0b20e8245e1550b7ff5b5c5df05e25d820d469113dd64f944760ec596a4628f155a66b3bd20c8d37341155441e331832c808403b390a3f7c55ba7cae740c4dcab632dae5d50b07e2bf0bfdd12ad840107
+3
+90
+0x458c120ce1d39f1e1acd5d7f5f8dd51d5a88ce57980cf78f9b346d48362b851dff81af3b4f9678fbcdca8e74e2262f46735d00e8c2bfb00b8fd7857c84b2816653f49657c4466996c763bb75330ed401decdef4fc86e797dc99d51e2bec3ac696c67c06960f75102f166f2a92f7ef030371ec256abe96b7e420e62971e88fdf2L
+4. a6d410051ea8f831fe4026abbd1ed92b7bf9a300f87367b9eda19c8cec052a1284cf50907316679004aab6274c1c3479d49a30e9ade95ea049538d0ec848f217a44faf1ffdb62e5ebb591cf24cdbf26e6bd300403acc4d6c2b4e6a0fa42c5776f9e68eec2062e1a9a86e3aafec9e6ce60d4b249dc178aa70576df3ebe6722321
+3
+188
+0x60fffcfde748be62a8fc66087d33b90c950846c49d34f74007984ea7c7f60b20199a03fc702b75d9a6f4ddbe7701bff7e1d965e6aaf5b49bd4b4785085a0be3a6c194f74696fe1725ecf879537d565a662bee8aa30f6d0cf87011922d41d2affcd5c22144665c3ca0ba920c94e8360b38f992a4d1b93308f44a0eb5f5a3c5a9dL
+5. fd2adfc8f9e88d3f31941e82bef75f6f9afcbba4ba2fc19e71aab2bf5eb3dbbfb1ff3e84b6a4900f472cc9450205d2062fa6e532530938ffb9e144e4f9307d8a2ebd01ae578fd10699475491218709cfa0aa1bfbd7f2ebc5151ce9c7e7256f14915a52d235625342c7d052de0521341e00db5748bcad592b82423c556f1c1051
+3
+52
+0x1348effb7ff42372122f372020b9b22c8e053e048c72258ba7a2606c82129d1688ae6e0df7d4fb97b1009e7a3215aca9089a4dfd6e81351d81b3f4e1b358504f024892302cd72f51000f1664b2de9578fbb284427b04ef0a38135751864541515eada61b4c72e57382cf901922094b3fe0b5ebbdbac16dc572c392f6c9fbd01eL
+6.
+a04f35d80cb1d204c8d74ab48e658b081fb3250775c28c37807d4d0d669ff87f92add4ca150ab4a1fee6978cd1e26f7f5b124a2656252a6d5a8624e0ded5e508460611fa9b0034f2e35c49e2d0fbed10feda06e30102604acfc197327f5da0afe8e33cd66510693e81e838f28ab5164026dfb3dac014696b79463e65d90407eb
+3
+90
+0x1bba15a7386dfaa8a54289adf2031979671aade84780b880149d1de7027d85b4c25f7110793873083f36e4ce300a1b1dcf1d18eeebce65f00e6e5409235a43ff435f685b8527c322b772b86d2936cc4d26b4d6578a04dc54cdeb61dc5de76a339eb00f7ef3a6dd10aa1b5afde092b028e92318049baf7c286c50e06d1a7668deL
+So there's our transmission data. 6 messages... and the output seems to fit gorgeously with that python program we were looking at earlier.
+the first number we get looks to be n, then the second is e, then the User ID, then finally the server sends back the encrypted message.
+so. fantastic, we have numbers, what can we draw out of this? e is always equal to 3- there are a lot of attacks on RSA that have to do with low exponents. in the hint, we learn that
+"Two of these messages use the same public key, and are related in a useful way."
+I like the sound of that-- looks like transmissions #2 and #5 have the same public key, that's what we will be using to get the flag. Now we need to figure out how to attack-- google RSA attacks.
+When we look for attacks, we need to look for signs of faults in these applications of RSA. what we have here: two applications with the same known modulus and same known small exponent of three. Also, the messages are changed by a known polynomial (um+u^2, u being the user id) before RSA is applied. when finding an attack, look for an exploit of all of these....
+the first result is this paper, that gives a brief overview of common RSA attacks. it also has a really perspicuous primer on RSA at the beginning, so if you slacked on my prerequisite reading assignment, this should catch you up pretty quickly.
+https://crypto.stanford.edu/~dabo/papers/RSA-survey.pdf
+we know that m is a message. um+u^2 looks like a polynomial to me, and we could rearrange 2 equations of that form to relate the first person's message to the second person's. the moduli are the exact same number, and the exponent is 3. Franklin-Reiter related message attack looks perfect for what we need to do! and hey, look, they summarize the attack in this paper! and even better, they have an EQUATION to plug things into for when the exponent is 3 :D-- could life BE any better?
+https://www.cs.unc.edu/~reiter/papers/1996/Eurocrypt.pdf
+ So in section 2, looks like we need to solve for a polynomial equation with the 2 messages related.
+below: m1 is the message put into RSA in transmission 2, changed by user_id * int(message.encode('hex'), 16) + (user_id**2)
+likewise, m2 is going to be the message from transmission 5.
+m1 = 37m + 37^2
+m2 = 52m + 52^2
+now, algebra time...  and go ahead and put in your modulus into python or mathematica as n, your ciphertexts in as c1 and c2, 3=e, u1 = 37, u2 = 52)
+find a function online to calculate modular inverses, i used this off rosettacode
+>>> def extended_gcd(aa, bb):
+    lastremainder, remainder = abs(aa), abs(bb)
+    x, lastx, y, lasty = 0, 1, 1, 0
+    while remainder:
+        lastremainder, (quotient, remainder) = remainder, divmod(lastremainder, remainder)
+        x, lastx = lastx - quotient*x, x
+        y, lasty = lasty - quotient*y, y
+    return lastremainder, lastx * (-1 if aa < 0 else 1), lasty * (-1 if bb < 0 else 1)
+ 
+>>> def modinv(a, m):
+        g, x, y = extended_gcd(a, m)
+        if g != 1:
+                raise ValueError
+        return x % m
+ 
+we need to find m1 in terms of m2, per the equations in the paper.
+(m1 - 37^2)/37 = m
+I SEE A DIVISION SIGN!!! no division on a ring: find the modular multiplicative inverse of 37 and multiply it by (m1-37^2) rather than divide. then we sub that into the m2 expression
+(m1-37^2) * modinv(37,n) = m
+m2 = 52 * (m1-37^2) * modinv(37,n)  + 52^2
+find the coefficients of all this by multiplying things out, modulus by n
+alpha = (52 * modinv(37,n))%n
+beta = 52^2 - 52(37^2)(modinv(37,n))%n
+plug these and the ciphertexts into the left side of the equation from the paper, then stick them in python-- remember to modinv the denominator of the fraction looking thing.
+top = (beta * (c2 + 2 * (alpha**3) * c1 - (beta**3)))%n
+bottom = (alpha * (c2 - (alpha**3) * c1 + 2 * (beta**3)))%n
+m1 = top * modinv(bottom,n) %n
+now with m1 solved for, it's algebra to get the solution
+m1 = 37m + 37^2
+m1 - 37^2 = 37m
+(m1-37^2)*modinv(37,n) % n = m
+now turn the message into text to get the flag! turn it into hex, then run it through an ascii-to-text thing online!
+the flag: did_you_know_you_can_sometimes_gcd_outside_a_euclidean_domain
+:D
