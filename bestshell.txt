@@ -1,0 +1,4 @@
+
+Best Shell was a shell that took advantage of function pointers to call certain functions when certain strings were entered into the shell. It looks like we want to call the "shell" function, except we are not admin.
+
+Looking over the code, there is an interesting function "rename" which overwrites names of functions in the command struct. However, there is no buffer overflow protection. The solution was to create a command 32 a's, plus the address of the call of system("/bin/sh"). This overwrites the function pointer. Calling the newly created command gives us a shell.

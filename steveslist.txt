@@ -1,0 +1,6 @@
+
+Steve's List was a two-step exploit. The first step was to figure out how to pass custom settings to the application. Settings were passed in a cookie, so it should be simple -- but Steve decided to sign his settings with a secret key that was changed, using MD5. However, the key is the same length, and is the prefix to the hash function input -- this means that we can use a length extension attack to fake signatures. Now that we've got that done, the next step is to take advantage of unserialize().
+
+PHP's unserialize() can construct arbitrary objects and also destruct them. That means that __destruct is called on objects created when they go out of scope. The Post's objects __destruct function prints a version of itself run through some filters. It was fairly trivial to create a Post with custom data, but the real magic was in the Filter.
+
+The Filter class used preg_replace(). preg_replace() has this "feature" where it can run arbitrary PHP code with the /e modifier. All we had to do was create a filter that replaced the string "flag" with "file_get_contents("/home/daedalus/flag.txt");" and set the /e modifier on it. Then we created a post with contents "flag", and applied the filter to it. The flag was printed in a comment in the generated HTML.
