@@ -1,0 +1,28 @@
+So, nevernote was actually fairly simple once you get down to it.
+The basic principle is that the authors of the program screwed up
+both their canary implementation and the number of bytes that they
+are reading in a way that allows a buffer overflow if you're clever
+about it.
+
+1. Perform a buffer overflow of buf by providing a note with
+   contents of length > 512. This should contain your shellcode,
+   in my case, a simple code snippet that uses int 0x80 to call
+   the exec system call to run "/bin/sh".
+
+2. Override the canary struct in the safe_buffer struct with a
+   known value somewhere in memory using your buffer overflow
+   of buf in the same struct. I used the four bytes "/hom" located
+   at the address note_file_path points to.
+
+   The verify pointer in the canary struct can be overwritten with
+   the address of your value (in my case note_file_path) to ensure
+   that the canary passes the check.
+
+3. Continue your buffer overflow to overwrite the return address in
+   the stack frame of get_note with the address of dest, which now
+   contains the shellcode you included in your buffer overflow.
+
+4. Your shellcode should now execute and, provided you did everything
+   properly, you should have a shell. Congrats.
+
+- s0lder
