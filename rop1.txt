@@ -1,0 +1,13 @@
+So, I feel like I didn't actually solve this one the correct way because the
+problem hint had no bearing at all on my solution, but whatever.
+
+This problem was basically trivial, as I recall.
+
+All you need to do I provide a command line argument of length > 64 such that
+the argument contains shellcode to run /bin/sh or what have you, as well as
+the necessary values to overwrite the return address of the vuln stack frame
+to return into your shellcode and run it.
+
+It's probably not the right way, but it got me the flag...
+
+- s0lder
