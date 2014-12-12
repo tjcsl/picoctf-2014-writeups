@@ -1,0 +1,10 @@
+ExecuteMe is quite easy.
+
+All you need to do is provide to the program shellcode to spawn a bash process.
+Because the program just runs the buffer anyway, no special work is required.
+I just Googled for execve shellcode and used the first result (incidentally,
+this is the same shellcode I used for basically every other similar problem)
+
+Bing bang boom. Flag
+
+- s0lder
